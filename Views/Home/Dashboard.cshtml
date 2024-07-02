@@ -1,0 +1,66 @@
+﻿@model D_MartApp.Models.DashboardModel
+
+<h2>Dashboard</h2>
+
+<div id="monthlySalesChart" style="width: 100%; height: 500px;"></div>
+<div id="trendingProductsChart" style="width: 100%; height: 500px;"></div>
+<div id="dailySalesChart" style="width: 100%; height: 500px;"></div>
+
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+
+<script>
+    am5.ready(function () {
+        // Monthly Sales Chart
+        createChart("monthlySalesChart", @Html.Raw(Json.Serialize(Model.MonthlySales)));
+
+        // Trending Products Chart
+        createChart("trendingProductsChart", @Html.Raw(Json.Serialize(Model.TrendingProducts)));
+
+        // Daily Sales Chart
+        createChart("dailySalesChart", @Html.Raw(Json.Serialize(Model.DailySales)));
+
+        function createChart(chartId, data) {
+            // Create root element
+            var root = am5.Root.new(chartId);
+
+            // Create chart
+            var chart = root.container.children.push(am5xy.XYChart.new(root, {
+                panX: true,
+                panY: true,
+                wheelX: "panX",
+                wheelY: "zoomX",
+                pinchZoomX: true
+            }));
+
+            // Create axes
+            var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+                categoryField: "productName",
+                renderer: am5xy.AxisRendererX.new(root, {})
+            }));
+
+            var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                renderer: am5xy.AxisRendererY.new(root, {})
+            }));
+
+            // Create series
+            var series = chart.series.push(am5xy.ColumnSeries.new(root, {
+                name: "Sales",
+                xAxis: xAxis,
+                yAxis: yAxis,
+                valueYField: "quantitySold",
+                categoryXField: "productName",
+                tooltip: am5.Tooltip.new(root, {
+                    labelText: "{valueY}"
+                })
+            }));
+
+            // Set data
+            xAxis.data.setAll(data);
+            series.data.setAll(data);
+
+            // Add cursor
+            chart.set("cursor", am5xy.XYCursor.new(root, {}));
+        }
+    });
+</script>
